@@ -1,37 +1,42 @@
+name: .NET
+
+on:
+  push:
+
+    branches: [ main ]
+
+  pull_request:
+
+    branches: [ main ]
+
 env:
-  app-name: "<name of your web app>"
-  rg-name: "<name of your resource group>"
 
-jobs:    # <-- this is the existing jobs line
-        if-no-files-found: warn  # <-- last line of build job: insert below this line
+  app-name: "ghl03webapp32624"
+  rg-name: "davidS-RG"
 
-  deploy_staging:
-    needs: build
+
+
+jobs:
+  build:
     runs-on: ubuntu-latest
-
-    environment:
-      name: PRE-PROD
-      url: ${{ steps.deploywebapp.outputs.webapp-url }}
-
+    
     steps:
-    - name: Download a Build Artifact
-      uses: actions/download-artifact@v2.0.8
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
       with:
-        name: website
-        path: website
-
-    - name: Login via Azure CLI
-      uses: azure/login@v1
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Test
+      run: dotnet test --no-build --verbosity normal
+    - name: Publish
+      run: dotnet publish SimpleFeedReader/SimpleFeedReader.csproj -c Release -o website
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v3.1.0
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-    - name: Deploy web app
-      id: deploywebapp
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.app-name }}
-        slot-name: staging
-        package: website
-
-    - name: az cli logout
-      run: az logout
+          name: website
+          path: website/**
+          if-no-files-found: warn
