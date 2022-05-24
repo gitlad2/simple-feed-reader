@@ -11,8 +11,8 @@ on:
 
 env:
 
-  app-name: "ghl03webapp32624"
-  rg-name: "davidS-RG"
+  app-name: "DaltonApp"
+  rg-name: "S1-eastus-SP"
 
 
 
